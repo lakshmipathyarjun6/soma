@@ -51,6 +51,7 @@ into your python site-packages folder, i.e. ````anaconda3/envs/soma/lib/python3.
 Last but not least, the current SOMA code relies on [MoSh++](https://github.com/nghorbani/moshpp) mocap solver. 
 Please install MoSh++ following the guidelines in its repository.
 
+Also remember to change the OpenGL conda site package following: https://stackoverflow.com/questions/63475461/unable-to-import-opengl-gl-in-python-on-macos
 
 ## Using SOMA
 There are multiple main parts of the codebase that we try to explain in the [Tutorials](src/tutorials):
