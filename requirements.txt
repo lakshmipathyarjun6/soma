@@ -29,7 +29,7 @@ markdown
 omegaconf
 pandas
 pycodestyle
-pytorch-lightning
+pytorch-lightning==1.6
 scikit-learn
 tensorboard
 threadpoolctl
