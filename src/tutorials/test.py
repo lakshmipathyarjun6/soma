@@ -36,7 +36,7 @@ for ds_name in target_ds_names:
             'render.render_engine': 'eevee',  # eevee / cycles,
             # 'render.render_engine': 'cycles',  # eevee / cycles,
             'render.show_markers': True,
-            'render.save_final_blend_file': True,
+            'render.save_final_blend_file': False,
             'dirs.support_base_dir': support_base_dir,
 
         },
@@ -46,8 +46,8 @@ for ds_name in target_ds_names:
             'randomly_run_jobs': True,
         },
         run_tasks=[
-            # 'mosh',
-            'render'
+            'mosh',
+            # 'render'
         ],
         # fast_dev_run=True,
     )
