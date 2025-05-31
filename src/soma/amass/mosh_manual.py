@@ -34,6 +34,8 @@ from human_body_prior.tools.omni_tools import get_support_data_dir
 from loguru import logger
 from omegaconf import OmegaConf
 
+import ezc3d
+
 from moshpp.mosh_head import MoSh
 from moshpp.mosh_head import run_moshpp_once
 from soma.render.blender_tools import prepare_render_cfg
@@ -95,9 +97,13 @@ def mosh_manual(
             continue
 
         if osp.exists(cur_mosh_cfg.dirs.stageii_fname):
+            marker_data = ezc3d.c3d(mocap_fname)
+            start_frame_offset = int(marker_data['header']['points']['first_frame'])
+
             render_job = render_cfg.copy()
             render_job.update({
                 'mesh.mosh_stageii_pkl_fnames': [cur_mosh_cfg.dirs.stageii_fname],
+                'out.start_frame_offset': start_frame_offset
             })
             cur_render_cfg = prepare_render_cfg(**render_job)
             if not osp.exists(cur_render_cfg.dirs.mp4_out_fname):
