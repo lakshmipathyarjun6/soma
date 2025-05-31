@@ -6,47 +6,34 @@ import shutil
 import numpy as np
 import json
 
-import bpy
-from human_body_prior.tools.omni_tools import makepath
 from loguru import logger
 
-from soma.render.blender_tools import make_blender_silent
 from soma.render.blender_tools import prepare_render_cfg
-from soma.render.blender_tools import setup_scene
 
-def run_blender_once(cfg, body_mesh_fname):
-    make_blender_silent()
+# Avoid dealing with Blender inconsistencies - just load from file
+def load_body_shape_from_obj(body_mesh_fname):
+    try:
+        vertices = []
+        with open(body_mesh_fname) as f:
+            for line in f:
+                if line[0] == "v":
+                    vertex = list(map(float, line[2:].strip().split()))
+                    vertices.append(vertex)
 
-    bpy.ops.object.delete({"selected_objects": [obj for colec in bpy.data.collections for obj in colec.all_objects if
-                                                obj.name in ['Body', 'Object']]})
+        vertices_np = np.array(vertices)
+        flattened_verts = vertices_np.flatten().tolist()
 
-    if cfg.render.show_body:
-        bpy.ops.import_scene.obj(filepath=body_mesh_fname)
+        logger.success(f'loaded {body_mesh_fname}')
 
-        body = bpy.context.selected_objects[0]
+        return flattened_verts
 
-        body.name = 'Body'
-
-        v_world_coords = [(body.matrix_world @ v.co) for v in body.data.vertices]
-        plain_verts = np.array([list(vert.to_tuple()) for vert in v_world_coords])
-        flattened_verts = plain_verts.flatten().tolist()
-    else:
-        flattened_verts = []
-
-    bpy.ops.object.delete({"selected_objects": [obj for colec in bpy.data.collections for obj in colec.all_objects if
-                                                obj.name in ['Body', 'Object']]})
-
-    logger.success(f'loaded {body_mesh_fname}')
-
-    return flattened_verts
-
+    except FileNotFoundError:
+        print(f"{body_mesh_fname} not found.")
+    except:
+        print("An error occurred while loading the shape.")
 
 def create_export_sequence_from_mesh_dir(cfg):
     cfg = prepare_render_cfg(**cfg)
-
-    makepath(cfg.dirs.png_out_dir)
-
-    setup_scene(cfg)
 
     logger.debug(f'input mesh dir: {cfg.dirs.mesh_out_dir}')
 
@@ -56,7 +43,7 @@ def create_export_sequence_from_mesh_dir(cfg):
     all_entries = []
 
     for body_mesh_fname in body_mesh_fnames:
-        flattened_verts = run_blender_once(cfg, body_mesh_fname)
+        flattened_verts = load_body_shape_from_obj(body_mesh_fname)
 
         frame_id_str = body_mesh_fname.split('/')[-1].split('.')[0]
         frame_id = int(frame_id_str)
