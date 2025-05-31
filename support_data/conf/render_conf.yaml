@@ -11,6 +11,7 @@ out:
   basename: ${resolve_out_basename:${mesh.mosh_stageii_pkl_fnames}}
   ds_name: ${resolve_out_ds_name:${mesh.mosh_stageii_pkl_fnames}}
   subject_action_name: ${resolve_subject_action_name:${mesh.mosh_stageii_pkl_fnames}}
+  start_frame_offset: 0
 
 mesh:
   mosh_stageii_pkl_fnames: ???
