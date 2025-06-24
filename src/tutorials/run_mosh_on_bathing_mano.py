@@ -10,7 +10,7 @@ from loguru import logger
 
 from soma.amass.mosh_manual import mosh_manual
 
-def run_mosh(bathing_work_base_dir, captures, session, task):
+def run_mosh(bathing_work_base_dir, captures, session, task, hand):
     support_base_dir = osp.join(bathing_work_base_dir, 'support_files')
     mocap_base_dir = osp.join(support_base_dir, 'evaluation_mocaps', captures)
 
@@ -21,6 +21,8 @@ def run_mosh(bathing_work_base_dir, captures, session, task):
 
     logger.info(f'#mocaps found for {session}: {len(mocap_fnames)}')
 
+    MANO_hand = 'MANO_RIGHT' if hand == 'right' else 'MANO_LEFT'
+
     mosh_manual(
         mocap_fnames,
         mosh_cfg={
@@ -28,10 +30,11 @@ def run_mosh(bathing_work_base_dir, captures, session, task):
             'dirs.work_base_dir': osp.join(work_base_dir, 'mosh_results'),
             'dirs.support_base_dir': support_base_dir,
             'surface_model.type': 'mano',
-            'surface_model.fname': osp.join(support_base_dir, 'mano', 'male', 'MANO_LEFT.pkl'),
+            'surface_model.fname': osp.join(support_base_dir, 'mano', 'male', '{}.pkl'.format(MANO_hand)),
             'moshpp.pose_body_prior_fname': None,
             'moshpp.optimize_fingers': True,
-            'moshpp.optimize_betas': True
+            'moshpp.optimize_betas': True,
+            'moshpp.head_marker_corr_fname': None
         },
         render_cfg={
             'dirs.work_base_dir': osp.join(work_base_dir, 'render_results'),
@@ -41,7 +44,7 @@ def run_mosh(bathing_work_base_dir, captures, session, task):
             'render.show_markers': True,
             'render.save_final_blend_file': False,
             'surface_model.type': 'mano',
-            'surface_model.fname': osp.join(support_base_dir, 'mano', 'male', 'MANO_LEFT.npz'),
+            'surface_model.fname': osp.join(support_base_dir, 'mano', 'male', '{}.npz'.format(MANO_hand)),
             'dirs.support_base_dir': support_base_dir,
         },
         parallel_cfg={
@@ -55,12 +58,13 @@ def run_mosh(bathing_work_base_dir, captures, session, task):
     )
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Bathing-Dataset-SMPLX-MOSH')
+    parser = argparse.ArgumentParser(description='Bathing-Dataset-MANO-MOSH')
 
     parser.add_argument('--data-dir', required=True, type=str, help='The path to the top-level data directory')
     parser.add_argument('--captures', required=True, type=str, help='The name of the captures type to run')
     parser.add_argument('--session', required=True, type=str, help='The name of the session to run')
     parser.add_argument('--task', required=False, default='mosh', type=str, help='Task to run. Can be "mosh" or "render", defaults to mosh')
+    parser.add_argument('--hand', required=True, type=str, help='The name of the hand to use. Can be "left" or "right", defaults to right')
 
     args = parser.parse_args()
 
@@ -68,5 +72,6 @@ if __name__ == '__main__':
     captures = args.captures
     session = args.session
     task = args.task
+    hand = args.hand
 
-    run_mosh(bathing_work_base_dir, captures, session, task)
+    run_mosh(bathing_work_base_dir, captures, session, task, hand)
