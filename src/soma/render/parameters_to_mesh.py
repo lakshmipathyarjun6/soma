@@ -77,7 +77,7 @@ def convert_to_mesh_once(cfg):
         num_dmpls = None if cfg.mesh.enable_dmpl and 'dmpls' in mosh_result else None
         surface_model_type = mosh_result['surface_model_type']
         gender = mosh_result['gender']
-        surface_model_fname = osp.join(cfg.dirs.support_base_dir, surface_model_type, gender, 'model.npz')
+        surface_model_fname = cfg.surface_model.fname if cfg.surface_model.fname else osp.join(cfg.dirs.support_base_dir, surface_model_type, gender, 'model.npz')
         assert osp.exists(surface_model_fname), FileExistsError(surface_model_fname)
         if num_dmpls:
             dmpl_fname = osp.join(cfg.dirs.support_base_dir, surface_model_type, gender, 'dmpl.npz')
