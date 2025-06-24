@@ -27,6 +27,11 @@ def run_mosh(bathing_work_base_dir, captures, session, task):
             'moshpp.verbosity': 1, # set to 2 to visulaize the process in meshviewer
             'dirs.work_base_dir': osp.join(work_base_dir, 'mosh_results'),
             'dirs.support_base_dir': support_base_dir,
+            'surface_model.type': 'mano',
+            'surface_model.fname': osp.join(support_base_dir, 'mano', 'male', 'MANO_LEFT.pkl'),
+            'moshpp.pose_body_prior_fname': None,
+            'moshpp.optimize_fingers': True,
+            'moshpp.optimize_betas': True
         },
         render_cfg={
             'dirs.work_base_dir': osp.join(work_base_dir, 'render_results'),
@@ -35,8 +40,9 @@ def run_mosh(bathing_work_base_dir, captures, session, task):
             'render.render_engine': 'eevee',  # eevee / cycles,
             'render.show_markers': True,
             'render.save_final_blend_file': False,
+            'surface_model.type': 'mano',
+            'surface_model.fname': osp.join(support_base_dir, 'mano', 'male', 'MANO_LEFT.npz'),
             'dirs.support_base_dir': support_base_dir,
-
         },
         parallel_cfg={
             'pool_size': 1,
