@@ -39,6 +39,8 @@ render:
   render_only_one_image: False
   video_fps: 15
 
+  compute_meshes_only: False
+
   resolution:
     change_from_blend: False
     default: [ 800, 1024 ] # [x_res, y_res]
