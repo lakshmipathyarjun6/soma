@@ -106,7 +106,7 @@ def mosh_manual(
                 'out.start_frame_offset': start_frame_offset
             })
             cur_render_cfg = prepare_render_cfg(**render_job)
-            if not osp.exists(cur_render_cfg.dirs.mp4_out_fname):
+            if not osp.exists(cur_render_cfg.dirs.smplxmosh_out_fname):
                 render_jobs.append(render_job)
 
     if 'mosh' in run_tasks:

@@ -55,9 +55,8 @@ def create_export_sequence_from_mesh_dir(cfg):
 
         all_entries.append(entry)
 
-    out_mp4_fname = cfg.dirs.mp4_out_fname
-    out_json_fname = out_mp4_fname.replace('.mp4', '.smplxmosh')
-    out_obj_fname = out_mp4_fname.replace('.mp4', '_basemesh.obj')
+    out_json_fname = cfg.dirs.smplxmosh_out_fname
+    out_obj_fname = out_json_fname.replace('.smplxmosh', '_basemesh.obj')
 
     with open(out_json_fname, "w+") as fout:
         json.dump(all_entries, fout, indent=4)

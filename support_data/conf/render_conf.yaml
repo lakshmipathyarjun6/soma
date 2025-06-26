@@ -6,6 +6,7 @@ dirs:
   png_out_dir: ${dirs.temp_base_dir}/${out.ds_name}/png_files/${render.blend_file_basename}/${out.subject_action_name}_${out.basename}
   mesh_out_dir: ${dirs.temp_base_dir}/${out.ds_name}/mesh_files/${out.subject_action_name}_${out.basename}
   mp4_out_fname: ${dirs.work_base_dir}/${out.ds_name}/${out.subject_action_name}/${out.basename}.mp4
+  smplxmosh_out_fname: ${dirs.work_base_dir}/${out.ds_name}/${out.subject_action_name}/${out.basename}.smplxmosh
 
 out:
   basename: ${resolve_out_basename:${mesh.mosh_stageii_pkl_fnames}}
