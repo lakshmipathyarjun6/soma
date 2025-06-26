@@ -47,8 +47,8 @@ def render_mosh_once(render_cfg):
     from soma.render.mesh_to_sequence_standard import create_export_sequence_from_mesh_dir
 
     convert_to_mesh_once(render_cfg)
-    create_video_from_mesh_dir(render_cfg)
     create_export_sequence_from_mesh_dir(render_cfg)
+    create_video_from_mesh_dir(render_cfg)
 
 
 def prepare_render_cfg(*args, **kwargs) -> DictConfig:
