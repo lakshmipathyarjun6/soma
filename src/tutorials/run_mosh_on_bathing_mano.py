@@ -44,6 +44,7 @@ def run_mosh(bathing_work_base_dir, captures, session, task, hand):
             'render.render_engine': 'eevee',  # eevee / cycles,
             'render.show_markers': True,
             'render.save_final_blend_file': False,
+            'render.compute_meshes_only': True,
             'surface_model.type': 'mano',
             'surface_model.fname': osp.join(support_base_dir, 'mano', 'male', '{}.npz'.format(MANO_hand)),
             'dirs.support_base_dir': support_base_dir,

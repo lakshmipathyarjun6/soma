@@ -77,7 +77,7 @@ def convert_to_mesh_once(cfg):
         num_dmpls = None if cfg.mesh.enable_dmpl and 'dmpls' in mosh_result else None
         surface_model_type = mosh_result['surface_model_type']
         gender = mosh_result['gender']
-        surface_model_fname = cfg.surface_model.fname if cfg.surface_model.fname else osp.join(cfg.dirs.support_base_dir, surface_model_type, gender, 'model.npz')
+        surface_model_fname = cfg.surface_model.fname if "surface_model" in cfg else osp.join(cfg.dirs.support_base_dir, surface_model_type, gender, 'model.npz')
         assert osp.exists(surface_model_fname), FileExistsError(surface_model_fname)
         if num_dmpls:
             dmpl_fname = osp.join(cfg.dirs.support_base_dir, surface_model_type, gender, 'dmpl.npz')
@@ -145,8 +145,12 @@ def convert_to_mesh_once(cfg):
 
         for mosh_id, data in datas.items():
 
+            # This seems to be buggy - ignore for now
+            # cur_body_verts = rotate_points_xyz(data['mosh_bverts'][t][None],
+            #                                    np.array([0, 0, -data['theta_z_mosh']]).reshape(-1, 3))
+
             cur_body_verts = rotate_points_xyz(data['mosh_bverts'][t][None],
-                                               np.array([0, 0, -data['theta_z_mosh']]).reshape(-1, 3))
+                                               np.array([0, 0, 0]).reshape(-1, 3))
             cur_body_verts = rotate_points_xyz(cur_body_verts, np.array([-90, 0, 0]).reshape(-1, 3))[0]
 
             cur_body_mesh = Mesh(cur_body_verts, data['faces'], vc=data['body_color_mosh'])
@@ -170,8 +174,12 @@ def convert_to_mesh_once(cfg):
                 else:
                     marker_colors = np.array([Color(cfg.mesh.marker_color.style).rgb for _ in data['labels']])
 
+                # This seems to be buggy - ignore for now
+                # cur_marker_verts = rotate_points_xyz(data['markers'][t][None],
+                #                                      np.array([0, 0, -data['theta_z_mosh']]).reshape(-1, 3))
+
                 cur_marker_verts = rotate_points_xyz(data['markers'][t][None],
-                                                     np.array([0, 0, -data['theta_z_mosh']]).reshape(-1, 3))
+                                                     np.array([0, 0, 0]).reshape(-1, 3))
 
                 cur_marker_verts = rotate_points_xyz(cur_marker_verts, np.array([-90, 0, 0]).reshape(-1, 3))[0]
                 if cfg.mesh.marker_color.style == 'black':
