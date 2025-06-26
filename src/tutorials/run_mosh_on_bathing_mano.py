@@ -34,7 +34,8 @@ def run_mosh(bathing_work_base_dir, captures, session, task, hand):
             'moshpp.pose_body_prior_fname': None,
             'moshpp.optimize_fingers': True,
             'moshpp.optimize_betas': True,
-            'moshpp.head_marker_corr_fname': None
+            'moshpp.head_marker_corr_fname': None,
+            'moshpp.stagei_frame_picker.num_frames': 20
         },
         render_cfg={
             'dirs.work_base_dir': osp.join(work_base_dir, 'render_results'),
