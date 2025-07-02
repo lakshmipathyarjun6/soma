@@ -30,8 +30,6 @@ def run_mosh(bathing_work_base_dir, captures, session, task):
         },
         render_cfg={
             'dirs.work_base_dir': osp.join(work_base_dir, 'render_results'),
-            'dirs.mesh_out_dir': osp.join(render_base_dir, 'meshes'),
-            'dirs.png_out_dir': osp.join(render_base_dir, 'pngs'),
             'render.render_engine': 'eevee',  # eevee / cycles,
             'render.show_markers': True,
             'render.save_final_blend_file': False,

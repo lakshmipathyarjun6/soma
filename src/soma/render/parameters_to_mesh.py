@@ -142,7 +142,6 @@ def convert_to_mesh_once(cfg):
 
     for t, fId in enumerate(selected_frames):
         body_mesh = None
-        marker_locations = None
         marker_mesh = None
 
         for mosh_id, data in datas.items():
@@ -202,15 +201,22 @@ def convert_to_mesh_once(cfg):
                     except:
                         pass
 
-                marker_locations = cur_marker_verts[nonan_mask] if marker_locations is None else marker_locations.concatenate_mesh(cur_marker_verts[nonan_mask])
                 marker_mesh = cur_marker_mesh if marker_mesh is None else marker_mesh.concatenate_mesh(cur_marker_mesh)
 
         wfId = fId + cfg.out.start_frame_offset
+
         body_mesh.write_obj(makepath(cfg.dirs.mesh_out_dir, 'body_mesh', f'{wfId:05d}.obj', isfile=True))
+
+        flattened_body_vert_locations = cur_body_verts.flatten().tolist()
+        write_body_vert_loc_path = makepath(cfg.dirs.mesh_out_dir, 'body_vertex_locations', f'{wfId:05d}.json', isfile=True)
+
+        with open(write_body_vert_loc_path, "w+") as fout:
+            json.dump(flattened_body_vert_locations, fout, indent=4)
+
         if cfg.render.show_markers:
-            marker_mesh.write_obj(makepath(cfg.dirs.mesh_out_dir, 'marker_mesh', f'{wfId:05d}.obj', isfile=True))
+            marker_mesh.write_obj(makepath(cfg.dirs.mesh_out_dir, 'marker_meshes', f'{wfId:05d}.obj', isfile=True))
         
-            flattened_marker_locations = marker_locations.flatten().tolist()
+            flattened_marker_locations = cur_marker_verts[nonan_mask].flatten().tolist()
             write_marker_loc_path = makepath(cfg.dirs.mesh_out_dir, 'marker_locations', f'{wfId:05d}.json', isfile=True)
 
             with open(write_marker_loc_path, "w+") as fout:
