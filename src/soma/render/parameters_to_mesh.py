@@ -205,7 +205,7 @@ def convert_to_mesh_once(cfg):
         wfId = fId + cfg.out.start_frame_offset
         body_mesh.write_obj(makepath(cfg.dirs.mesh_out_dir, 'body_mesh', f'{wfId:05d}.obj', isfile=True))
         if cfg.render.show_markers:
-            cur_marker_mesh.write_ply(makepath(cfg.dirs.mesh_out_dir, 'marker_mesh', f'{wfId:05d}.ply', isfile=True))
+            marker_mesh.write_obj(makepath(cfg.dirs.mesh_out_dir, 'marker_mesh', f'{wfId:05d}.obj', isfile=True))
 
         if cfg.render.render_only_one_image: break
 
