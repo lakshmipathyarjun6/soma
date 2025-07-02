@@ -16,7 +16,7 @@ out:
 mesh:
   mosh_stageii_pkl_fnames: ???
   enable_dmpl: True
-  ds_rate: 10
+  ds_rate: 1
 
   colors:
     default: [ 0.345, 0.580, 0.713 ]
