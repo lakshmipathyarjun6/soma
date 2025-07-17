@@ -16,6 +16,7 @@ out:
 mesh:
   mosh_stageii_pkl_fnames: ???
   enable_dmpl: True
+  ds_offset: 0
   ds_rate: 1
 
   colors:

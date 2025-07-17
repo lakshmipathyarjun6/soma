@@ -100,7 +100,7 @@ def convert_to_mesh_once(cfg):
         # selected_frames = range(0, 10, step_size)
         if selected_frames is None:
             time_length = len(mosh_result['trans'])
-            selected_frames = range(0, time_length, cfg.mesh.ds_rate)
+            selected_frames = range(cfg.mesh.ds_offset, time_length, cfg.mesh.ds_rate)
 
         assert time_length == len(mosh_result['trans']), \
             ValueError(
