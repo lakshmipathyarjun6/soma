@@ -27,6 +27,7 @@ def run_mosh(bathing_work_base_dir, captures, session, task, hand):
         mocap_fnames,
         mosh_cfg={
             'moshpp.verbosity': 1, # set to 2 to visulaize the process in meshviewer
+            'moshpp.wrist_markers_on_stick': True,
             'dirs.work_base_dir': osp.join(work_base_dir, 'mosh_results'),
             'dirs.support_base_dir': support_base_dir,
             'surface_model.type': 'mano',
