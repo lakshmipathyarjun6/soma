@@ -1,39 +1,28 @@
 import argparse
-import os
 
 import torch
 import pickle
+import smplx
+import json
+
+import chumpy as ch
+import numpy as np
 
 from loguru import logger
-
-from moshpp.mosh_head import MoSh
 
 from psbody.mesh import Mesh
 
 from human_body_prior.body_model.body_model import BodyModel
 from human_body_prior.tools.omni_tools import copy2cpu as c2c
+from human_body_prior.tools.rotation_tools import rotate_points_xyz
+
+from moshpp.models.smpl_fast_derivatives import SmplModelLBS
+from moshpp.models.smpl_fast_derivatives import load_surface_model
+
+to_cpu = lambda tensor: tensor.detach().cpu().numpy()
 
 # Copied over from MoSH repo and modified for convenience
-def dump_stagei_mano_mesh(mosh_stagei_pkl_fname):
-    assert mosh_stagei_pkl_fname.endswith('.pkl'), ValueError(f'mosh_stagei_pkl_fname should be a valid pkl file: {mosh_stagei_pkl_fname}')
-    mosh_stagei = pickle.load(open(mosh_stagei_pkl_fname, 'rb'))
-
-    output_ply_fname = mosh_stagei_pkl_fname.replace('.pkl', '_markerless.ply')
-
-    surface_model_fname = mosh_stagei['stagei_debug_details']['cfg']['surface_model']['fname']
-    if surface_model_fname.endswith('.pkl'):
-        surface_model_fname = surface_model_fname.replace('.pkl', '.npz')
-
-    body_parms = {}
-    if 'betas' in mosh_stagei:
-        num_betas = mosh_stagei['stagei_debug_details']['cfg']['surface_model']['num_betas']
-        body_parms['betas'] =  torch.Tensor(mosh_stagei['betas'][:num_betas][None])
-        body_parms['num_betas'] =  num_betas
-    surface_model_type = mosh_stagei['stagei_debug_details']['cfg']['surface_model']['type']
-    
-    bm = BodyModel(surface_model_fname, num_betas=body_parms.get('num_betas', 10), model_type=surface_model_type)
-    body = bm(**body_parms)
-
+def dump_stagei_mano_mesh(body, output_ply_fname):
     verts = c2c(body.v[0])
     faces = c2c(body.f)
     
@@ -43,44 +32,113 @@ def dump_stagei_mano_mesh(mosh_stagei_pkl_fname):
 
     logger.info(f'created {output_ply_fname}')
 
-# def dump_mano_joints(bathing_work_base_dir, path, hand):
-#     support_base_dir = os.path.join(bathing_work_base_dir, 'support_files')
-#     MANO_hand = 'MANO_RIGHT' if hand == 'right' else 'MANO_LEFT'
+def dump_stagei_mano_joints(body, surface_model_fname, surface_model_type, output_mesh_ply_fname_baseline, output_joints_json_fname):
+    sm_temp = load_surface_model(surface_model_fname=surface_model_fname,
+                            surface_model_type=surface_model_type,
+                            pose_hand_prior_fname = None
+                            )
+    
+    verts = c2c(body.v[0])
 
-#     stageii_data = pickle.load(open(path, 'rb'))
-    
-#     mosh_result = MoSh.load_as_amass_npz(path, include_markers=True)
-    
-#     surface_model_fname = os.path.join(support_base_dir, 'mano', 'models', '{}.npz'.format(MANO_hand))
-#     assert os.path.exists(surface_model_fname), FileExistsError(surface_model_fname)
+    rest_hand_global_orient = np.zeros((1, sm_temp.trans.size))
+    rest_hand_transl = np.zeros((1, sm_temp.trans.size))
+    rest_hand_pose = np.zeros((1, sm_temp.pose.size))
+    rest_hand_fullpose = np.zeros((1, sm_temp.fullpose.size))
 
-#     num_betas = len(mosh_result['betas']) if 'betas' in mosh_result else 10
-#     num_dmpls = None
-#     dmpl_fname = None
-#     num_expressions = len(mosh_result['expression']) if 'expression' in mosh_result else None
+    rest_params = {
+        'global_orient': rest_hand_global_orient,
+        'transl': rest_hand_transl,
+        'pose': rest_hand_pose,
+        'fullpose': rest_hand_fullpose
+    }
     
-#     sm = BodyModel(bm_fname=surface_model_fname,
-#                 num_betas=num_betas,
-#                 num_expressions=num_expressions,
-#                 num_dmpls=num_dmpls,
-#                 dmpl_fname=dmpl_fname)
+    hand_m = smplx.create(model_path=surface_model_fname,
+                model_type=surface_model_type,
+                flat_hand_mean=True,
+                v_template=verts,
+                batch_size=1)
 
+    hand_rest_params = {k: torch.from_numpy(v).type(torch.float32) for k, v in rest_params.items()}
+    hand_rest_output = hand_m(**hand_rest_params)
+    joints_hand_rest_positions = to_cpu(hand_rest_output.joints)
+    joints_hand_rest_positions = joints_hand_rest_positions[0]
     
-#     fullposes = stageii_data["fullpose"]
+    joints_hierarchy = np.array([255, 0, 1, 2, 0, 4, 5, 0, 7, 8, 0, 10, 11, 0, 13, 14], dtype=np.uint8)
+    num_joints = len(joints_hierarchy)
+
+    hand_relative_rest_configuration = np.zeros(joints_hand_rest_positions.shape, dtype=joints_hand_rest_positions.dtype)
+    for ji in range(num_joints):
+        parent_index = joints_hierarchy[ji]
+
+        if parent_index == 255:
+            hand_relative_rest_configuration[ji] = joints_hand_rest_positions[ji]
+        else:
+            hand_relative_rest_configuration[ji] = joints_hand_rest_positions[ji] - joints_hand_rest_positions[parent_index]
     
-#     print(stageii_data['n_comps'])
+    joint_data = hand_relative_rest_configuration.flatten().tolist()
+    joint_json = {
+        "num_joints": int(len(joint_data) / 3),
+        "data": joint_data
+    }
+    
+    with open(output_joints_json_fname, "w+") as fout:
+        json.dump(joint_json, fout, indent=4)
+
+    betas = ch.array(np.zeros(len(sm_temp.betas)))
+
+    can_model = SmplModelLBS(trans=ch.array(np.zeros(sm_temp.trans.size)),
+                            pose=ch.array(np.zeros(sm_temp.pose.size)),
+                            betas=betas,
+                            temp_model=sm_temp)
+    
+    params = {
+        'pose': np.zeros(sm_temp.pose.size),
+        'trans': np.zeros(sm_temp.trans.size)
+    }
+    
+    faces = can_model.f
+    verts_baseline = c2c(can_model(**params))
+
+    body_mesh = Mesh(verts_baseline, faces, vc=[.7, .7, .7])
+    
+    body_mesh.write_ply(output_mesh_ply_fname_baseline)
+
+    logger.info(f'created {output_mesh_ply_fname_baseline}')
+
+def load_body_model(mosh_stagei_pkl_fname):
+    assert mosh_stagei_pkl_fname.endswith('.pkl'), ValueError(f'mosh_stagei_pkl_fname should be a valid pkl file: {mosh_stagei_pkl_fname}')
+    mosh_stagei = pickle.load(open(mosh_stagei_pkl_fname, 'rb'))
+
+    surface_model_fname = mosh_stagei['stagei_debug_details']['cfg']['surface_model']['fname']
+    surface_model_type = mosh_stagei['stagei_debug_details']['cfg']['surface_model']['type']
+    
+    surface_model_fname_npz = surface_model_fname.replace('.pkl', '.npz')
+
+    body_params = {}
+    if 'betas' in mosh_stagei:
+        num_betas = mosh_stagei['stagei_debug_details']['cfg']['surface_model']['num_betas']
+        body_params['betas'] =  torch.Tensor(mosh_stagei['betas'][:num_betas][None])
+        body_params['num_betas'] =  num_betas
+    
+    bm = BodyModel(surface_model_fname_npz, num_betas=body_params.get('num_betas', 10), model_type=surface_model_type)
+    body = bm(**body_params)
+    
+    return surface_model_fname, surface_model_type, body
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Bathing-Dataset-MANO-MOSH')
 
-    # parser.add_argument('--data-dir', required=True, type=str, help='The path to the top-level data directory')
     parser.add_argument('--path', required=True, type=str, help='The path to the MANO stage_ii PKL to extract')
-    # parser.add_argument('--hand', required=True, type=str, help='The name of the hand to use. Can be "left" or "right", defaults to right')
 
     args = parser.parse_args()
 
-    # bathing_work_base_dir = args.data_dir
     path = args.path
-    # hand = args.hand
     
-    dump_stagei_mano_mesh(path)
+    output_mesh_ply_fname = path.replace('.pkl', '_markerless.ply')
+    output_mesh_ply_fname_baseline = path.replace('.pkl', '_markerless_baseline.ply')
+    output_joints_json_fname = path.replace('.pkl', '_joints.json')
+    
+    surface_model_fname, surface_model_type, body = load_body_model(path)
+    
+    dump_stagei_mano_mesh(body, output_mesh_ply_fname)
+    dump_stagei_mano_joints(body, surface_model_fname, surface_model_type, output_mesh_ply_fname_baseline, output_joints_json_fname)
