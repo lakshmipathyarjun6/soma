@@ -74,11 +74,10 @@ def dump_stagei_mano_joints(body, surface_model_fname, surface_model_type, outpu
             hand_relative_rest_configuration[ji] = joints_hand_rest_positions[ji]
         else:
             hand_relative_rest_configuration[ji] = joints_hand_rest_positions[ji] - joints_hand_rest_positions[parent_index]
-    
-    joint_data = hand_relative_rest_configuration.flatten().tolist()
+
     joint_json = {
-        "num_joints": int(len(joint_data) / 3),
-        "data": joint_data
+        "joint_hierarchy": joints_hierarchy.flatten().tolist(),
+        "joint_positions": hand_relative_rest_configuration.flatten().tolist()
     }
     
     with open(output_joints_json_fname, "w+") as fout:
