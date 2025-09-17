@@ -31,7 +31,7 @@ def run_mosh(bathing_work_base_dir, captures, session, task, hand):
             'dirs.work_base_dir': osp.join(work_base_dir, 'mosh_results'),
             'dirs.support_base_dir': support_base_dir,
             'surface_model.type': 'mano',
-            'surface_model.fname': osp.join(support_base_dir, 'mano', 'models', '{}.pkl'.format(MANO_hand)),
+            'surface_model.fname': osp.join(support_base_dir, 'mano', 'male', '{}.pkl'.format(MANO_hand)),
             'moshpp.pose_body_prior_fname': None,
             'moshpp.optimize_fingers': True,
             'moshpp.optimize_betas': True,
@@ -45,7 +45,7 @@ def run_mosh(bathing_work_base_dir, captures, session, task, hand):
             'render.save_final_blend_file': False,
             'render.compute_meshes_only': True,
             'surface_model.type': 'mano',
-            'surface_model.fname': osp.join(support_base_dir, 'mano', 'models', '{}.npz'.format(MANO_hand)),
+            'surface_model.fname': osp.join(support_base_dir, 'mano', 'male', '{}.npz'.format(MANO_hand)),
             'dirs.support_base_dir': support_base_dir,
         },
         parallel_cfg={
