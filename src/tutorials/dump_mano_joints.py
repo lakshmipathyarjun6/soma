@@ -22,17 +22,17 @@ from moshpp.models.smpl_fast_derivatives import load_surface_model
 to_cpu = lambda tensor: tensor.detach().cpu().numpy()
 
 # Copied over from MoSH repo and modified for convenience
-def dump_stagei_mano_mesh(body, output_ply_fname):
+def dump_stagei_mano_mesh(body, output_mesh_obj_fname):
     verts = c2c(body.v[0])
     faces = c2c(body.f)
     
     body_mesh = Mesh(verts, faces, vc=[.7, .7, .7])
     
-    body_mesh.write_ply(output_ply_fname)
+    body_mesh.write_obj(output_mesh_obj_fname)
 
-    logger.info(f'created {output_ply_fname}')
+    logger.info(f'created {output_mesh_obj_fname}')
 
-def dump_stagei_mano_joints(body, surface_model_fname, surface_model_type, output_mesh_ply_fname_baseline, output_joints_json_fname):
+def dump_stagei_mano_joints(body, surface_model_fname, surface_model_type, output_joints_json_fname):
     sm_temp = load_surface_model(surface_model_fname=surface_model_fname,
                             surface_model_type=surface_model_type,
                             pose_hand_prior_fname = None
@@ -76,33 +76,11 @@ def dump_stagei_mano_joints(body, surface_model_fname, surface_model_type, outpu
             hand_relative_rest_configuration[ji] = joints_hand_rest_positions[ji] - joints_hand_rest_positions[parent_index]
 
     joint_json = {
-        "joint_hierarchy": joints_hierarchy.flatten().tolist(),
         "joint_positions": hand_relative_rest_configuration.flatten().tolist()
     }
     
     with open(output_joints_json_fname, "w+") as fout:
         json.dump(joint_json, fout, indent=4)
-
-    betas = ch.array(np.zeros(len(sm_temp.betas)))
-
-    can_model = SmplModelLBS(trans=ch.array(np.zeros(sm_temp.trans.size)),
-                            pose=ch.array(np.zeros(sm_temp.pose.size)),
-                            betas=betas,
-                            temp_model=sm_temp)
-    
-    params = {
-        'pose': np.zeros(sm_temp.pose.size),
-        'trans': np.zeros(sm_temp.trans.size)
-    }
-    
-    faces = can_model.f
-    verts_baseline = c2c(can_model(**params))
-
-    body_mesh = Mesh(verts_baseline, faces, vc=[.7, .7, .7])
-    
-    body_mesh.write_ply(output_mesh_ply_fname_baseline)
-
-    logger.info(f'created {output_mesh_ply_fname_baseline}')
 
 def load_body_model(mosh_stagei_pkl_fname):
     assert mosh_stagei_pkl_fname.endswith('.pkl'), ValueError(f'mosh_stagei_pkl_fname should be a valid pkl file: {mosh_stagei_pkl_fname}')
@@ -133,11 +111,10 @@ if __name__ == '__main__':
 
     path = args.path
     
-    output_mesh_ply_fname = path.replace('.pkl', '_markerless.ply')
-    output_mesh_ply_fname_baseline = path.replace('.pkl', '_markerless_baseline.ply')
-    output_joints_json_fname = path.replace('.pkl', '_joints.json')
+    output_mesh_obj_fname = path.replace('.pkl', '_markerless.obj')
+    output_joints_json_fname = path.replace('.pkl', '_joints.hj')
     
     surface_model_fname, surface_model_type, body = load_body_model(path)
     
-    dump_stagei_mano_mesh(body, output_mesh_ply_fname)
-    dump_stagei_mano_joints(body, surface_model_fname, surface_model_type, output_mesh_ply_fname_baseline, output_joints_json_fname)
+    dump_stagei_mano_mesh(body, output_mesh_obj_fname)
+    dump_stagei_mano_joints(body, surface_model_fname, surface_model_type, output_joints_json_fname)
