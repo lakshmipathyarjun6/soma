@@ -107,7 +107,7 @@ def load_body_model(mosh_stagei_pkl_fname):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Bathing-Dataset-MANO-MOSH')
 
-    parser.add_argument('--path', required=True, type=str, help='The path to the MANO stage_ii PKL to extract')
+    parser.add_argument('--path', required=True, type=str, help='The path to the MANO stage_i PKL to extract')
 
     args = parser.parse_args()
 
