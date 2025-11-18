@@ -81,6 +81,8 @@ def dump_stagei_mano_joints(body, surface_model_fname, surface_model_type, outpu
     
     with open(output_joints_json_fname, "w+") as fout:
         json.dump(joint_json, fout, indent=4)
+    
+    logger.info(f'created {output_joints_json_fname}')
 
 def load_body_model(mosh_stagei_pkl_fname):
     assert mosh_stagei_pkl_fname.endswith('.pkl'), ValueError(f'mosh_stagei_pkl_fname should be a valid pkl file: {mosh_stagei_pkl_fname}')
@@ -105,7 +107,7 @@ def load_body_model(mosh_stagei_pkl_fname):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Bathing-Dataset-MANO-MOSH')
 
-    parser.add_argument('--path', required=True, type=str, help='The path to the MANO stage_ii PKL to extract')
+    parser.add_argument('--path', required=True, type=str, help='The path to the MANO stage_i PKL to extract')
 
     args = parser.parse_args()
 
