@@ -81,6 +81,8 @@ def dump_stagei_mano_joints(body, surface_model_fname, surface_model_type, outpu
     
     with open(output_joints_json_fname, "w+") as fout:
         json.dump(joint_json, fout, indent=4)
+    
+    logger.info(f'created {output_joints_json_fname}')
 
 def load_body_model(mosh_stagei_pkl_fname):
     assert mosh_stagei_pkl_fname.endswith('.pkl'), ValueError(f'mosh_stagei_pkl_fname should be a valid pkl file: {mosh_stagei_pkl_fname}')
