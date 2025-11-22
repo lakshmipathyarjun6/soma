@@ -4,7 +4,7 @@ dirs:
   work_base_dir: ???
 
   png_out_dir: ${dirs.work_base_dir}/${out.basename}_pngs
-  mesh_out_dir: ${dirs.work_base_dir}/${out.basename}_meshes
+  mesh_out_dir: ${dirs.work_base_dir}/${out.ds_name}/${out.subject_action_name}/${out.basename}_meshes
   mp4_out_fname: ${dirs.work_base_dir}/${out.ds_name}/${out.subject_action_name}/${out.basename}.mp4
 
 out:
